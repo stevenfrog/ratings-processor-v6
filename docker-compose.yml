@@ -1,0 +1,96 @@
+services:
+  # The new ratings processor application
+  legacy-rating-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Corrected: Use a separate env file for the Docker container
+    env_file:
+      - docker.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka-setup:
+        condition: service_completed_successfully
+    networks:
+      - topcoder-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # PostgreSQL database service
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ratings_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - topcoder-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d ratings_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Zookeeper service for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    networks:
+      - topcoder-net
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # Kafka message broker service
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    networks:
+      - topcoder-net
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:29092 --list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # New service to automatically create Kafka topics
+  kafka-setup:
+    image: confluentinc/cp-kafka:7.4.0
+    depends_on:
+      - kafka
+    networks:
+      - topcoder-net
+    command: >
+      sh -c "
+        echo 'Waiting for Kafka to be ready...' &&
+        cub kafka-ready -b kafka:29092 1 60 &&
+        echo 'Kafka is ready! Creating topics...' &&
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --replication-factor 1 --partitions 1 --topic challenge.notification.events &&
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --replication-factor 1 --partitions 1 --topic submission.notification.aggregate &&
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --replication-factor 1 --partitions 1 --topic notifications.autopilot.events &&
+        echo 'Topics created successfully.'
+      "
+
+# Define the network for services to communicate
+networks:
+  topcoder-net:
+    driver: bridge
+
+# Define the volume for persistent data
+volumes:
+  postgres_data:

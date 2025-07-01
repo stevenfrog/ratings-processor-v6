@@ -1,0 +1,54 @@
+{
+  "name": "tc-ratings-processor-modernized",
+  "version": "1.0.0",
+  "description": "Topcoder - Ratings Processor with Node.js, TypeScript, and Prisma",
+  "main": "dist/app.js",
+  "author": "TCSCODER",
+  "license": "ISC",
+  "scripts": {
+    "start": "node dist/app.js",
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:migrate": "npx prisma migrate dev",
+    "db:seed": "npx prisma db seed"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "@prisma/client": "^5.15.0",
+    "axios": "^1.7.2",
+    "config": "^3.3.11",
+    "http-json-response": "^1.0.1",
+    "lodash": "^4.17.21",
+    "moment-timezone": "^0.5.45",
+    "no-kafka": "^3.4.3",
+    "topcoder-healthcheck-dropin": "^1.0.3",
+    "winston": "^3.13.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/config": "^3.3.4",
+    "@types/hapi__joi": "^17.0.0",
+    "@types/lodash": "^4.17.5",
+    "@types/node": "^18.19.33",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.2.0",
+    "prisma": "^5.15.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
