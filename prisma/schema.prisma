@@ -10,33 +10,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Challenge {
-  id             Int             @id @default(autoincrement())
-  legacyId       Int             @unique
-  componentId    Int?
-  ratedInd       Int?
-  registrations  UserChallenge[]
-  submissions    Submission[]
-  rating_history RatingHistory[]
-
-  @@map("challenges")
-}
-
-model User {
-  id             Int             @id @default(autoincrement())
-  handle         String          @unique
-  rating         Int?            @default(1200)
-  vol            Int?            @default(300)
-  registrations  UserChallenge[]
-  submissions    Submission[]
-  rating_history RatingHistory[]
-
-  @@map("users")
-}
-
 model UserChallenge {
-  userId             Int
-  challengeId        Int
+  userId             BigInt
+  challengeId        String
   attended           String?
   placed             Int?
   old_rating         Int?
@@ -44,8 +20,6 @@ model UserChallenge {
   system_point_total Float?
   point_total        Float?
   rated_ind          Int?
-  user               User      @relation(fields: [userId], references: [id])
-  challenge          Challenge @relation(fields: [challengeId], references: [id])
 
   @@id([userId, challengeId])
   @@map("user_challenges")
@@ -53,8 +27,8 @@ model UserChallenge {
 
 model Submission {
   id               String    @id @default(cuid())
-  challengeId      Int
-  userId           Int
+  challengeId      String
+  userId           BigInt
   score            Float?
   initialScore     Float?
   submissionTime   DateTime  @default(now())
@@ -62,21 +36,17 @@ model Submission {
   example          Int
   openTime         DateTime
   languageId       Int
-  challenge        Challenge @relation(fields: [challengeId], references: [id])
-  user             User      @relation(fields: [userId], references: [id])
 
   @@map("submissions")
 }
 
 model RatingHistory {
   id          Int       @id @default(autoincrement())
-  userId      Int
-  challengeId Int
+  userId      BigInt
+  challengeId String
   rating      Int
   vol         Int
   createdAt   DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id])
-  challenge   Challenge @relation(fields: [challengeId], references: [id])
 
   @@map("rating_history")
 }

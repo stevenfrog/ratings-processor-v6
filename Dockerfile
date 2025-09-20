@@ -10,12 +10,15 @@ WORKDIR /app
 # Copy package.json and package-lock.json to leverage Docker layer caching
 COPY package*.json ./
 
+# Copy the Prisma schema to generate the client
+COPY prisma ./prisma/
+
 # Install project dependencies
 RUN npm install
 
-# Copy the Prisma schema to generate the client
-COPY prisma ./prisma/
-RUN npx prisma generate
+# has already run in postinstall
+# RUN npx prisma generate
+#RUN npm run prisma:generate
 
 # Copy the rest of the application source code
 COPY . .

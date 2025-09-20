@@ -6,8 +6,8 @@ const send = require('http-json-response');
 
 const submission1 = {
   id: '14a1b211-283b-4f9a-809f-71e200646560',
-  challengeId: 30054163,
-  memberId: 27244033,
+  challengeId: 30096740,
+  memberId: 22742764,
   legacySubmissionId: 2001,
   resource: 'submission',
   url: 'http://content.topcoder.com/some/path',
@@ -18,8 +18,8 @@ const submission1 = {
 
 const submission2 = {
   id: '14a1b211-283b-4f9a-809f-71e200646561',
-  challengeId: 30054163,
-  memberId: 27244044,
+  challengeId: 30096740,
+  memberId: 40154782,
   resource: 'submission',
   url: 'http://content.topcoder.com/some/path',
   type: 'Contest Submission',

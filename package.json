@@ -9,11 +9,16 @@
     "start": "node dist/app.js",
     "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint \"{src,apps,libs,test,mock}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,apps,libs,test,mock}/**/*.ts\" --fix",
+    "test": "NODE_ENV=test mocha --require ts-node/register 'src/test/*.test.ts'",
     "db:migrate": "npx prisma migrate dev",
-    "db:seed": "npx prisma db seed"
+    "db:seed": "npx prisma db seed",
+    "postinstall": "npm run prisma:generate",
+    "prisma:generate:rating": "npx prisma generate --schema=./prisma/schema.prisma",
+    "prisma:generate:member": "npx prisma generate --schema=./prisma/member-schema.prisma",
+    "prisma:generate:challenge": "npx prisma generate --schema=./prisma/challenge-schema.prisma",
+    "prisma:generate": "npm run prisma:generate:rating && npm run prisma:generate:member && npm run prisma:generate:challenge"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -35,18 +40,26 @@
     "@types/config": "^3.3.4",
     "@types/hapi__joi": "^17.0.0",
     "@types/lodash": "^4.17.5",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^18.19.33",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "chai": "^4.2.0",
+    "chai-http": "^4.2.1",
     "eslint": "^8.57.0",
     "eslint-config-standard-with-typescript": "^43.0.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.2.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "mocha": "^11.1.0",
+    "mocha-prepare": "^0.1.0",
     "prisma": "^5.15.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.20.0"
   },
   "engines": {
     "node": ">=18.0.0"

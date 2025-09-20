@@ -1,22 +1,22 @@
 /**
  * This module contains the winston logger configuration.
  */
-import config from 'config'
-import util from 'util'
-import winston, { createLogger, format, transports } from 'winston'
+import config from "config";
+import util from "util";
+import winston, { createLogger, format, transports } from "winston";
 
 const logger = createLogger({
-  level: config.get('LOG_LEVEL'),
+  level: config.get("LOG_LEVEL"),
   transports: [
     new transports.Console({
       format: format.combine(
         format.colorize(),
         format.splat(),
-        format.simple()
-      )
-    })
-  ]
-})
+        format.simple(),
+      ),
+    }),
+  ],
+});
 
 /**
  * Log error details with signature
@@ -25,24 +25,24 @@ const logger = createLogger({
  */
 logger.error = (err: any, signature?: string): winston.Logger => {
   if (!err) {
-    return logger
+    return logger;
   }
 
-  let signatureMessage = ''
+  let signatureMessage = "";
   if (signature) {
-    signatureMessage = `Error happened in ${signature}`
+    signatureMessage = `Error happened in ${signature}`;
   }
 
   // Check if error is a string or an object
-  if (typeof err === 'string') {
-    return logger.log('error', `${signatureMessage} ${err}`)
+  if (typeof err === "string") {
+    return logger.log("error", `${signatureMessage} ${err}`);
   } else if (err instanceof Error) {
     // If it's an Error object, inspect it
-    return logger.log('error', `${signatureMessage}\n${util.inspect(err)}`)
+    return logger.log("error", `${signatureMessage}\n${util.inspect(err)}`);
   } else {
     // For other object types
-    return logger.log('error', `${signatureMessage}\n${util.inspect(err)}`)
+    return logger.log("error", `${signatureMessage}\n${util.inspect(err)}`);
   }
-}
+};
 
-export default logger
+export default logger;

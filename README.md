@@ -19,6 +19,8 @@ Configuration is managed via environment variables. This project uses two separa
 ### Key Environment Variables
 
 - `DATABASE_URL`: **(Required)** The connection string for your PostgreSQL database.
+- `MEMBER_DATABASE_URL`: **(Required)** The connection string for member PostgreSQL database.
+- `CHALLENGE_DATABASE_URL`: **(Required)** The connection string for challenge PostgreSQL database.
 - `M2M_TOKEN`: **(Required)** A valid M2M bearer token for authenticating with the Topcoder API.
 - `SUBMISSION_API_URL`: The base URL for the Topcoder Submissions API.
 - `KAFKA_URL`: Comma-separated list of Kafka broker URLs.
@@ -29,7 +31,7 @@ Configuration is managed via environment variables. This project uses two separa
 
 This step creates the necessary migration files. You only need to do this once.
 
-1.  **Start Database Service**: From the project root, run 
+1.  **Start Database Service**: From the project root, run
     ```bash
     docker compose up -d postgres
     ```
@@ -46,11 +48,55 @@ This step creates the necessary migration files. You only need to do this once.
 
 4.  **Stop the Database**: Run `docker compose down` to stop the standalone database container.
 
-### Step 2: Running the Full Application
+## Step 3: Initial Member Database and Challenge Database Setup
+
+- Clone codes from `https://github.com/topcoder-platform/member-api-v6`
+
+-Member  Database Setup, you can run:
+```bash
+docker run -d --name memberdb -p 5532:5432 \
+  -e POSTGRES_USER=johndoe -e POSTGRES_DB=memberdb \
+  -e POSTGRES_PASSWORD=mypassword \
+  postgres:16
+```
+
+- Deploy
+  Then follow `README.md` to install dependencies and setup environment.
+
+- Init DB
+  Then follow `README.md ##Database Seed Data` to init db with seed data.
+
+- Argument subTrackId is missing
+  If you meet this error while `npm run seed-data`, see https://discussions.topcoder.com/discussion/37391/member-api-v6-seed-data-js
+
+- Clone codes from `https://github.com/topcoder-platform/challenge-api-v6`
+
+- Challenge Database Setup, you can run:
+```bash
+docker run -d --name challengedb -p 5632:5432 \
+  -e POSTGRES_USER=johndoe -e POSTGRES_DB=challengedb \
+  -e POSTGRES_PASSWORD=mypassword \
+  postgres:16
+```
+
+- Deploy
+  Then follow `README.md` to install dependencies and setup environment.
+
+- Init DB
+  Then follow `README.md ## Local Deployment` to init db with seed data.
+
+- Then check and export the database url
+```bash
+export MEMBER_DATABASE_URL="postgresql://johndoe:mypassword@localhost:5532/memberdb"
+export CHALLENGE_DATABASE_URL="postgresql://johndoe:mypassword@localhost:5632/challengedb"
+```
+
+### Step 3: Running the Full Application
 
 1.  **Create `docker.env` file for the application**:
     - Copy `docker.env.example` to a new file named `docker.env`.
     - Open `docker.env` and **paste the provided access token** into the `M2M_TOKEN` variable.
+    - Open `docker.env` and config `MEMBER_DATABASE_URL` and `CHALLENGE_DATABASE_URL` with your real ip address.
 
 2.  **Build and Run All Services**:
     From the project root, run:
@@ -125,3 +171,42 @@ The `host-gateway` value is a special string that resolves to the host's IP addr
 Your application is now fully running. To verify that it's working correctly:
 - **View Logs:** `docker compose logs -f legacy-rating-processor`
 - **Test Functionality:** Follow the steps in **`Validation.md`**.
+
+## Run locally and run test
+
+We can run code in local not docker
+
+- Comment `legacy-rating-processor` in `docker-compose.yml`
+  Then run `docker compose up -d`
+
+- make sure `memberdb` and `challengedb` has been run correctly
+  and make sure seed data has been imported correctly
+
+- then run `docker ps`, and make sure service like this:
+  https://gyazo.com/0132de7cba07d01b44819b9252b2f130
+```bash
+$ docker ps
+CONTAINER ID   IMAGE                             COMMAND                  CREATED         STATUS                   PORTS                                         NAMES
+055ba49d604c   confluentinc/cp-kafka:7.4.0       "/etc/confluent/dock…"   3 minutes ago   Up 3 minutes (healthy)   0.0.0.0:9092->9092/tcp, :::9092->9092/tcp     ratings-processor-v6-kafka-1
+6841b753348d   postgres:16-alpine                "docker-entrypoint.s…"   3 minutes ago   Up 3 minutes (healthy)   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp     ratings-processor-v6-postgres-1
+a973837971be   confluentinc/cp-zookeeper:7.4.0   "/etc/confluent/dock…"   3 minutes ago   Up 3 minutes             2181/tcp, 2888/tcp, 3888/tcp                  ratings-processor-v6-zookeeper-1
+3fa895ffc7c4   postgres:16                       "docker-entrypoint.s…"   24 hours ago    Up 2 hours               0.0.0.0:5632->5432/tcp, [::]:5632->5432/tcp   challengedb
+9e274461b473   postgres:16                       "docker-entrypoint.s…"   25 hours ago    Up 2 hours               0.0.0.0:5532->5432/tcp, [::]:5532->5432/tcp   memberdb
+```
+
+- export env
+```bash
+export MEMBER_DATABASE_URL="postgresql://johndoe:mypassword@localhost:5532/memberdb"
+export CHALLENGE_DATABASE_URL="postgresql://johndoe:mypassword@localhost:5632/challengedb"
+export DATABASE_URL="postgresql://user:password@localhost:5432/ratings_db"
+export SUBMISSION_API_URL="http://localhost:3001"
+
+export M2M_TOKEN="<PASTE_YOUR_TOKEN_HERE>"
+```
+
+- `npm run start` will run codes locally
+  you can follow `Validation.md` to verify
+
+- `npm run test` will test codes automatically
+  It simulate `Process a New User Registration`, `Process a Submission Review`, `Process a Review Summation`, `Process a Review End Event` four steps.
+  you can see test assert result and check output log to verify codes.

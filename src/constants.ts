@@ -3,6 +3,6 @@
  */
 
 export const resources = {
-  review: 'review',
-  reviewSummation: 'reviewSummation'
-}
+  review: "review",
+  reviewSummation: "reviewSummation",
+};
