@@ -207,6 +207,10 @@ export M2M_TOKEN="<PASTE_YOUR_TOKEN_HERE>"
 - `npm run start` will run codes locally
   you can follow `Validation.md` to verify
 
+- Run sql in challengeDB: `SELECT * FROM "Challenge" where "legacyId"=30096740`
+  Change `ProcessorService.test.ts` L14 challengeId with result:
+  `const challenge1Id = "xxxx";`
+
 - `npm run test` will test codes automatically
   It simulate `Process a New User Registration`, `Process a Submission Review`, `Process a Review Summation`, `Process a Review End Event` four steps.
   you can see test assert result and check output log to verify codes.
